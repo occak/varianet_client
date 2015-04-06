@@ -33,12 +33,15 @@ class ofApp : public ofBaseApp{
     double phase;
     float volume;
     
+    void soundChange(string name, int index, float value);
+    
     //ui
     void exit();
     void guiEvent(ofxUIEventArgs &e);
     
     //game
     float costRadius, costTexture, costDensity, costRotation, costMute;
+    bool radiusChanged, textureChanged, densityChanged, rotationChanged, positionChanged = false;
 		
     
     ofEasyCam cam;

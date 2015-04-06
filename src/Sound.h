@@ -24,7 +24,7 @@ public:
     
     void setup(Disc* disc);
     void update();
-    vector < float > setEnvelope(int index, int texture) ;
+    vector<float> scale;
     
     Disc* disc;
     

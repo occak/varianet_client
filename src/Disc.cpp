@@ -130,17 +130,22 @@ int Disc::setTexture(int index, int type) {
     
     texture[index] = type;
 }
-
 //----------------------------------
 
 float Disc::getRadius(int index) const{
     
-    if ( index == -1) return 10; // '0 point'
-    return radii[index];
+    if ( index == -1) return origin;
+    else return radii[index];
 }
 //----------------------------------
 
 float Disc::setRadius(int index, float size){
+    
+    if ( index != -1) return radii[index] = size;
+}
+//----------------------------------
+
+float Disc::setThickness(int index, float size){
     
     float change = size - (radii[index]-radii[index-1]); // change in the difference of size between the inner circle
     for (int i = index; i < getDiscIndex(); i++) {
@@ -201,8 +206,20 @@ float Disc::setPosition(int index, float newPosition){
     
     return zPosition[index] = newPosition;
 }
-
 //----------------------------------
+
+float Disc::getPosOffset(int index) const{
+    
+    return posOffset[index];
+}
+//----------------------------------
+
+float Disc::setPosOffset (int index, float newOffset){
+    
+    return posOffset[index] = newOffset;
+}
+//----------------------------------
+
 float Disc::getLife() const{
     
     return life;

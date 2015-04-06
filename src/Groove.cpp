@@ -102,7 +102,7 @@ void Groove::draw(){
     ofSetColor(ofColor::black);
     ofFill();
     ofSetSphereResolution(20);
-    ofDrawSphere(0, 0, 10);
+    ofDrawSphere(0, 0, disc->origin);
     
     for(int i = 0; i < disc->getDiscIndex(); i++){
         
