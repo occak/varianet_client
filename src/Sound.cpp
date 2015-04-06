@@ -73,7 +73,7 @@ void Sound::setup(Disc* disc){
         ControlGenerator filterFreq = ControlMidiToFreq().input(scaleSnapper);
         float qTarget = ofMap(disc->getRadius(i)-disc->getRadius(i-1), 15, 100, 50, 0);
         ControlGenerator q = synth.addParameter("q"+ofToString(i),qTarget).min(0).max(50);
-        Generator filter = BPF24().input(groove).cutoff(filterFreq).Q(q);
+        Generator filter = BPF12().input(groove).cutoff(filterFreq).Q(q);
         Generator limiter = Limiter().input(2*filter);
         
         master = master + limiter;
@@ -84,5 +84,8 @@ void Sound::setup(Disc* disc){
 
 void Sound::update(){
     
+    for(int i = 0; i < disc->getDiscIndex(); i++){
+        
+    }
     
 }

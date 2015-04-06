@@ -18,7 +18,7 @@ void ofApp::setup(){
     ofBackground(255);
     
     //set up network
-    client.setup("127.0.0.1", 10001);
+    client.setup("127.0.0.1", 10002);
     client.setMessageDelimiter("varianet");
     
     // ask for server state
@@ -257,15 +257,52 @@ void ofApp::update(){
                 for (int i = 0; i < disc.getDiscIndex(); i++) {
                     for(int j = 0; j < 9; j++){
                         nameValue = ofSplitString(received[j+(i*9)+2], ": ");
-                        if(nameValue[0] == "radius"+ofToString(i)) disc.setRadius(i, ofToFloat(nameValue[1]));
-                        if(nameValue[0] == "density"+ofToString(i)) disc.setDensity (i, ofToFloat(nameValue[1]));
-                        if(nameValue[0] == "rotation"+ofToString(i)) disc.setRotation (i, ofToFloat(nameValue[1]));
-                        if(nameValue[0] == "rotationSpeed"+ofToString(i)) disc.setRotationSpeed (i, ofToFloat(nameValue[1]));
-                        if(nameValue[0] == "texture"+ofToString(i)) disc.setTexture (i, ofToFloat(nameValue[1]));
-                        if(nameValue[0] == "zPosition"+ofToString(i)) disc.setPosition (i, ofToFloat(nameValue[1]));
-                        if(nameValue[0] == "posOffset"+ofToString(i)) disc.setPosOffset (i, ofToFloat(nameValue[1]));
-                        if(nameValue[0] == "mute"+ofToString(i) && ofToInt(nameValue[1]) == 1 ) disc.toggleMute(i);
-                        if(nameValue[0] == "perlin"+ofToString(i) && ofToInt(nameValue[1]) == 1 ) disc.toggleMoving(i);
+                        if(nameValue[0] == "radius"+ofToString(i)) {
+                            disc.setRadius(i, ofToFloat(nameValue[1]));
+                            //sound
+                            float q = ofMap(disc.getRadius(i)-disc.getRadius(i-1), 15, 100, 10, 0);
+                            soundChange("q", i, q);
+                        }
+                        if(nameValue[0] == "density"+ofToString(i)) {
+                            disc.setDensity (i, ofToFloat(nameValue[1]));
+                            //sound
+                            float envelopeCoeff = ofMap(disc.getDensity(i), 1, 30, 1, 5);
+                            float pulseRatio = ofMap(disc.getDensity(i), 1, 30, 0.001, 1);
+                            soundChange("envelopeWidth", i, envelopeCoeff);
+                            soundChange("pulseLength", i, pulseRatio);
+                        }
+                        if(nameValue[0] == "rotation"+ofToString(i)) {
+                            disc.setRotation (i, ofToFloat(nameValue[1]));
+                        }
+                        if(nameValue[0] == "rotationSpeed"+ofToString(i)) {
+                            disc.setRotationSpeed (i, ofToFloat(nameValue[1]));
+                            //sound
+                            float netSpeed = abs(abs(disc.getRotationSpeed(i))-abs(disc.getRotationSpeed(i-1)));
+                            float beat = ofMap(netSpeed, 0, 10, 0, 1000);
+                            soundChange("bpm", i, beat);
+                        }
+                        if(nameValue[0] == "texture"+ofToString(i)) {
+                            disc.setTexture (i, ofToFloat(nameValue[1]));
+                            //sound
+                            soundChange("envelope", i, disc.getTexture(i));
+                        }
+                        if(nameValue[0] == "zPosition"+ofToString(i)) {
+                            disc.setPosition (i, ofToFloat(nameValue[1]));
+                        }
+                        if(nameValue[0] == "posOffset"+ofToString(i)) {
+                            disc.setPosOffset (i, ofToFloat(nameValue[1]));
+                            //sound
+                            float amountFreq = ofMap(abs(disc.getRotationSpeed(i)), 0, 10, 0, 5000);
+                            float amountMod = ofMap(abs(disc.getPosition(i)), 0, 50, 0, 5000);
+                            soundChange("amountFreq", i, amountFreq);
+                            soundChange("amountMod", i, amountMod);
+                        }
+                        if(nameValue[0] == "mute"+ofToString(i) && ofToInt(nameValue[1]) == 1 ) {
+                            disc.toggleMute(i);
+                        }
+                        if(nameValue[0] == "perlin"+ofToString(i) && ofToInt(nameValue[1]) == 1 ) {
+                            disc.toggleMoving(i);
+                        }
                     }
                 }
                 
@@ -276,9 +313,7 @@ void ofApp::update(){
                     for(int i = 0; i < scaleValue.size(); i++){
                         sound.scale[i] = ofToFloat(scaleValue[i]);
                     }
-                        
                 }
-                
             }
             
             else if (title == "rotation"){
@@ -300,6 +335,25 @@ void ofApp::update(){
                 //change sound
                 float q = ofMap(disc.getRadius(ofToInt(nameValue[0]))-disc.getRadius(ofToInt(nameValue[0])-1), 15, 100, 10, 0);
                 soundChange("q", ofToInt(nameValue[0]), q);
+            }
+            
+            else if (title == "density"){
+                vector<string> nameValue;
+                nameValue = ofSplitString(received[1], ": ");
+                disc.setDensity(ofToInt(nameValue[0]), ofToFloat(nameValue[1]));
+                
+                //change sound
+                float envelopeCoeff = ofMap(disc.getDensity(ofToInt(nameValue[0])), 1, 30, 1, 5);
+                float pulseRatio = ofMap(disc.getDensity(ofToInt(nameValue[0])), 1, 30, 0.001, 1);
+                soundChange("envelopeWidth", ofToInt(nameValue[0]), envelopeCoeff);
+                soundChange("pulseLength", ofToInt(nameValue[0]), pulseRatio);
+            }
+            
+            else if (title == "mute"){
+                int thisDisc = ofToInt(received[1]);
+                disc.toggleMute(thisDisc);
+                if(disc.isMute(thisDisc) == 0) soundChange("envelope", thisDisc, disc.getTexture(thisDisc));
+                else soundChange("envelope", thisDisc, 0);
             }
         }
     }
@@ -526,20 +580,13 @@ void ofApp::keyPressed(int key){
         if(disc.getLife() > 0){
             disc.setLife(costMute);
             if(disc.isMute(disc.selected) == 0) {
-                disc.toggleMute(disc.selected);
-                disc.setEnvelope(disc.selected, 0);
-                sound.synth.setParameter("attack"+ofToString(disc.selected), disc.getEnvelope(disc.selected, 0));
-                sound.synth.setParameter("decay"+ofToString(disc.selected), disc.getEnvelope(disc.selected, 1));
-                sound.synth.setParameter("sustain"+ofToString(disc.selected), disc.getEnvelope(disc.selected, 2));
-                sound.synth.setParameter("release"+ofToString(disc.selected), disc.getEnvelope(disc.selected, 3));
+                disc.toggleMute(disc.selected); //mute on
+                soundChange("envelope", disc.selected, 0);
             }
             else{
-                disc.toggleMute(disc.selected);
+                disc.toggleMute(disc.selected); //mute off
                 disc.setEnvelope(disc.selected, disc.getTexture(disc.selected));
-                sound.synth.setParameter("attack"+ofToString(disc.selected), disc.getEnvelope(disc.selected, 0));
-                sound.synth.setParameter("decay"+ofToString(disc.selected), disc.getEnvelope(disc.selected, 1));
-                sound.synth.setParameter("sustain"+ofToString(disc.selected), disc.getEnvelope(disc.selected, 2));
-                sound.synth.setParameter("release"+ofToString(disc.selected), disc.getEnvelope(disc.selected, 3));
+                soundChange("envelope", disc.selected, disc.getTexture(disc.selected));
             }
         }
     }
