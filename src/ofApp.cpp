@@ -349,11 +349,31 @@ void ofApp::update(){
                 soundChange("pulseLength", ofToInt(nameValue[0]), pulseRatio);
             }
             
+             else if (title == "texture"){
+                 vector<string> nameValue;
+                 nameValue = ofSplitString(received[1], ": ");
+                 disc.setTexture(ofToInt(nameValue[0]), ofToInt(nameValue[1]));
+                 
+                 //change sound
+                 soundChange("envelope", ofToInt(nameValue[0]), ofToInt(nameValue[1]));
+             }
+            
             else if (title == "mute"){
                 int thisDisc = ofToInt(received[1]);
                 disc.toggleMute(thisDisc);
                 if(disc.isMute(thisDisc) == 0) soundChange("envelope", thisDisc, disc.getTexture(thisDisc));
                 else soundChange("envelope", thisDisc, 0);
+            }
+            
+            else if (title == "perlin"){
+                int thisDisc = ofToInt(received[1]);
+                disc.toggleMoving(thisDisc);
+            }
+            
+            else if (title == "resetPerlin"){
+                vector<string> nameValue;
+                nameValue = ofSplitString(received[1], ": ");
+                disc.resetPerlin[ofToInt(nameValue[0])] = ofToInt(nameValue[1]);
             }
         }
     }
