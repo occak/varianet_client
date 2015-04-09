@@ -17,17 +17,17 @@ void Sound::setup(Disc* disc){
     ///////////////////////
     
     
-    vector<float> scale;
-    scale.push_back(ofRandom(25));
-    scale.push_back(ofRandom(25));
-    scale.push_back(ofRandom(25));
-    scale.push_back(ofRandom(25));
-    scale.push_back(ofRandom(25));
-    scale.push_back(ofRandom(25));
-    scale.push_back(ofRandom(25));
-    scale.push_back(ofRandom(25));
-    scale.push_back(ofRandom(25));
-    scale.push_back(ofRandom(25));
+//    vector<float> scale;
+//    scale.push_back(ofRandom(25));
+//    scale.push_back(ofRandom(25));
+//    scale.push_back(ofRandom(25));
+//    scale.push_back(ofRandom(25));
+//    scale.push_back(ofRandom(25));
+//    scale.push_back(ofRandom(25));
+//    scale.push_back(ofRandom(25));
+//    scale.push_back(ofRandom(25));
+//    scale.push_back(ofRandom(25));
+//    scale.push_back(ofRandom(25));
     
     for(int i = 0; i < disc->getDiscIndex(); i++){
         
