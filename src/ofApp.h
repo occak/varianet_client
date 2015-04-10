@@ -46,7 +46,8 @@ class ofApp : public ofBaseApp{
     
     ofEasyCam cam;
     
-    //TCP
+    //TCP & udp
+    ofxUDPManager receiver;
     ofxTCPClient client;
     vector<string> received;
     string title;

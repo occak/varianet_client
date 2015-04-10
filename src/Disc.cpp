@@ -67,30 +67,30 @@ void Disc::update(){
         perlin[i] = 0;
         }
         
-    if(perlin[i] == 1){
-        
-        float position = getPosition(i);
-        
-        float time = ofGetElapsedTimef();
-        float timeScale = .1;
-        float displacementScale = 10;
-        float timeOffset = posOffset[i];
-        
-        // A typical design pattern for using Perlin noise uses a couple parameters:
-        // ofSignedNoise(time*timeScale+timeOffset)*displacementScale
-        //     ofSignedNoise(time) gives us noise values that change smoothly over time
-        //     ofSignedNoise(time*timeScale) allows us to control the smoothness of our noise (smaller timeScale, smoother values)
-        //     ofSignedNoise(time+timeOffset) allows us to use the same Perlin noise function to control multiple things and have them look as if they are moving independently
-        //     ofSignedNoise(time)*displacementScale allows us to change the bounds of the noise from [-1, 1] to whatever we want
-        // Combine all of those parameters together, and you've got some nice control over your noise
-        
-        position += (ofSignedNoise(time*timeScale+timeOffset)) * displacementScale;
-        
-
-        //update groove position
-        setPosition(i, position);
-        
-        }
+//    if(perlin[i] == 1){
+//        
+//        float position = getPosition(i);
+//        
+//        float time = ofGetElapsedTimef();
+//        float timeScale = .1;
+//        float displacementScale = 10;
+//        float timeOffset = posOffset[i];
+//        
+//        // A typical design pattern for using Perlin noise uses a couple parameters:
+//        // ofSignedNoise(time*timeScale+timeOffset)*displacementScale
+//        //     ofSignedNoise(time) gives us noise values that change smoothly over time
+//        //     ofSignedNoise(time*timeScale) allows us to control the smoothness of our noise (smaller timeScale, smoother values)
+//        //     ofSignedNoise(time+timeOffset) allows us to use the same Perlin noise function to control multiple things and have them look as if they are moving independently
+//        //     ofSignedNoise(time)*displacementScale allows us to change the bounds of the noise from [-1, 1] to whatever we want
+//        // Combine all of those parameters together, and you've got some nice control over your noise
+//        
+//        position += (ofSignedNoise(time*timeScale+timeOffset)) * displacementScale;
+//        
+//
+//        //update groove position
+//        setPosition(i, position);
+//        
+//        }
         resetPerlin[i] = 0;
     }
     
