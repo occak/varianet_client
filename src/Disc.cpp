@@ -181,18 +181,44 @@ float Disc::setRotation(int index, float newRotation){
     return rotation[index];
 }
 //----------------------------------
-
 float Disc::getRotationSpeed(int index) const{
     
     return rotationSpeed[index];
+    
+}
+
+void Disc::setRotationSpeed(int index, float addSpeed){
+    
+    rotationSpeed[index+1] -= addSpeed; //outer disc rotates relative to the inner disc
+    return rotationSpeed[index] += addSpeed;
+    
+}
+
+float Disc::getNetRotationSpeed(int index) const{
+    
+    if(index != 0){
+        float allBelow = 0;
+        for(int i = 0; i < index; i++){
+            allBelow += rotationSpeed[i];
+        }
+        return rotationSpeed[index]+allBelow;
+    }
+    else return rotationSpeed[0];
 }
 //----------------------------------
 
-float Disc::setRotationSpeed(int index, float newSpeed){
-
-    rotationSpeed[index+1] -= newSpeed; //outer disc rotates relative to the inner disc
-    return rotationSpeed[index] += newSpeed;
-
+void Disc::setNetRotationSpeed(int index, float newSpeed){
+    
+    if(index != 0){
+        float allBelow = 0;
+        for(int i = 0; i < index; i++){
+            allBelow += rotationSpeed[i];
+        }
+        rotationSpeed[index] = newSpeed - allBelow;
+        rotationSpeed[index+1] -= newSpeed - allBelow; //outer disc rotates relative to the inner disc
+    }
+    else rotationSpeed[0] = newSpeed;
+    
 }
 //----------------------------------
 

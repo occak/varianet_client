@@ -41,9 +41,12 @@ class Disc{
     
     float getRotation(int index) const;
     float setRotation(int index, float newRotation);
-    
+    //for the groove object to draw
     float getRotationSpeed(int index) const;
-    float setRotationSpeed(int index, float addSpeed);
+    void setRotationSpeed(int index, float addSpeed);
+    //for relative speeds
+    float getNetRotationSpeed(int index) const;
+    void setNetRotationSpeed(int index, float addSpeed);
     
     int getTexture(int index) const;
     int setTexture(int index, int type);

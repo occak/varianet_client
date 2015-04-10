@@ -38,7 +38,7 @@ void ofApp::setup(){
         ofxUICanvas *_ui;
         
         _ui = new ofxUICanvas("Groove " + ofToString(i+1));
-        _ui->addSlider("rotation" + ofToString(i+1), -10, 10, disc.getRotationSpeed(i));
+        _ui->addSlider("rotation" + ofToString(i+1), -10, 10, disc.getNetRotationSpeed(i));
         _ui->addSlider("radius" + ofToString(i+1), 15, 100, disc.getRadius(i)-disc.getRadius(i-1));
         _ui->addBiLabelSlider("density" + ofToString(i+1), "sparse", "dense", 30, 1, disc.getDensity(i));
         
@@ -94,11 +94,11 @@ void ofApp::guiEvent(ofxUIEventArgs &e)
             
             if(disc.getLife()>0){
                 rotationChanged = true;
-                float newRotation = slider->getScaledValue()-(disc.getRotationSpeed(i)+disc.getRotationSpeed(i-1));
+                float newRotation = slider->getScaledValue()-disc.getNetRotationSpeed(i);
                 disc.setRotationSpeed(i, newRotation);
                 
                 //change sound
-                float netSpeed = abs(abs(disc.getRotationSpeed(i))-abs(disc.getRotationSpeed(i-1)));
+                float netSpeed = abs(disc.getNetRotationSpeed(i));
                 float beat = ofMap(netSpeed, 0, 10, 0, 1000);
                 soundChange("bpm", i, beat);
                 
@@ -165,7 +165,7 @@ void ofApp::guiEvent(ofxUIEventArgs &e)
             soundChange("envelope", disc.selected, 0);
             
             //when texture is set to blank, rotation stops
-            disc.setRotationSpeed(disc.selected, -(disc.getRotationSpeed(disc.selected)+disc.getRotationSpeed(disc.selected-1)));
+            disc.setNetRotationSpeed(disc.selected, 0);
             soundChange("bpm", i, 0);
             
             //send to server
@@ -284,7 +284,7 @@ void ofApp::update(){
 //    groove.update();
     
     for(int i = 0; i< disc.getDiscIndex(); i++){
-        float amountFreq = ofMap(abs(disc.getRotationSpeed(i)), 0, 10, 0, 5000);
+        float amountFreq = ofMap(abs(disc.getNetRotationSpeed(i)), 0, 10, 0, 5000);
         float amountMod = ofMap(abs(disc.getPosition(i)), 0, 50, 0, 5000);
         soundChange("amountFreq", i, amountFreq);
         soundChange("amountMod", i, amountMod);
@@ -330,15 +330,15 @@ void ofApp::update(){
                             disc.setRotation (i, ofToFloat(nameValue[1]));
                         }
                         if(nameValue[0] == "rotationSpeed"+ofToString(i)) {
-                            disc.setRotationSpeed (i, ofToFloat(nameValue[1])+disc.getRotationSpeed(i-1));
+                            disc.setNetRotationSpeed (i, ofToFloat(nameValue[1]));
                             //sound
-//                            float netSpeed = abs(abs(disc.getRotationSpeed(i))-abs(disc.getRotationSpeed(i-1)));
+//                            float netSpeed = abs(abs(disc.getNetRotationSpeed(i))-abs(disc.getNetRotationSpeed(i-1)));
 //                            float beat = ofMap(netSpeed, 0, 10, 0, 1000);
 //                            soundChange("bpm", i, beat);
                             //ui
                             ofxUICanvas *canvas = static_cast <ofxUICanvas*> (ui[i]);
                             ofxUISlider *slider = static_cast <ofxUISlider*> (canvas->getWidget("rotation"+ofToString(i+1)));
-                            slider->setValue(ofToFloat(nameValue[1])-(disc.getRotationSpeed(i)+disc.getRotationSpeed(i-1)));
+                            slider->setValue(ofToFloat(nameValue[1]));
                         }
                         if(nameValue[0] == "texture"+ofToString(i)) {
                             disc.setTexture (i, ofToFloat(nameValue[1]));
@@ -369,7 +369,7 @@ void ofApp::update(){
                         if(nameValue[0] == "posOffset"+ofToString(i)) {
                             disc.setPosOffset (i, ofToFloat(nameValue[1]));
 //                            //sound
-//                            float amountFreq = ofMap(abs(disc.getRotationSpeed(i)), 0, 10, 0, 5000);
+//                            float amountFreq = ofMap(abs(disc.getNetRotationSpeed(i)), 0, 10, 0, 5000);
 //                            float amountMod = ofMap(abs(disc.getPosition(i)), 0, 50, 0, 5000);
 //                            soundChange("amountFreq", i, amountFreq);
 //                            soundChange("amountMod", i, amountMod);
@@ -399,17 +399,17 @@ void ofApp::update(){
                 vector<string> nameValue;
                 nameValue = ofSplitString(received[1], ": ");
                 int index = ofToInt(nameValue[0]);
-                disc.setRotationSpeed(index, ofToFloat(nameValue[1]));
+                disc.setNetRotationSpeed(index, ofToFloat(nameValue[1]));
                 
                 //change sound
-                float netSpeed = abs(abs(disc.getRotationSpeed(index))-abs(disc.getRotationSpeed(index-1)));
+                float netSpeed = abs(disc.getNetRotationSpeed(index));
                 float beat = ofMap(netSpeed, 0, 10, 0, 1000);
                 soundChange("bpm", index, beat);
                 
                 //update ui
                 ofxUICanvas *canvas = static_cast <ofxUICanvas*> (ui[index]);
                 ofxUISlider *slider = static_cast <ofxUISlider*> (canvas->getWidget("rotation"+ofToString(index+1)));
-                slider->setValue(disc.getRotationSpeed(index));
+                slider->setValue(disc.getNetRotationSpeed(index));
             }
             
             else if (title == "radius"){
@@ -552,29 +552,38 @@ void ofApp::keyPressed(int key){
     if(key == 'p') disc.toggleMoving(disc.selected);
     if(key == 'o') disc.resetPerlin[disc.selected] = 1;
     
-    if(key == 'j' && disc.selected != -1) {
+    if(key == 'a' && disc.selected != -1) {
         
         if(disc.getLife() > 0) {
             disc.setLife(costRotation);     // reduce life
-            disc.setRotationSpeed(disc.selected, +0.05);
-            //change should update the ui as well, but how?
-            //       ofxUISlider[disc.selected]->setSlider("rotation"+ofToString(disc.selected+1));
+            float newSpeed = disc.getRotationSpeed(disc.selected)+0.05;
+            disc.setRotationSpeed(disc.selected, +.05);
+            
+            //update ui
+            ofxUICanvas *canvas = static_cast <ofxUICanvas*> (ui[disc.selected]);
+            ofxUISlider *slider = static_cast <ofxUISlider*> (canvas->getWidget("rotation"+ofToString(disc.selected+1)));
+            slider->setValue(disc.getNetRotationSpeed(disc.selected));
             
             //change sound
-            float netSpeed = abs(abs(disc.getRotationSpeed(disc.selected))-abs(disc.getRotationSpeed(disc.selected-1)));
+            float netSpeed = abs(disc.getNetRotationSpeed(disc.selected));
             float beat = ofMap(netSpeed, 0, 10, 0, 1000);
             sound.synth.setParameter("bpm"+ofToString(disc.selected), beat);
         }
     }
     
-    if(key == 'l' && disc.selected != -1 ) {
+    if(key == 'd' && disc.selected != -1 ) {
         
         if(disc.getLife() > 0) {
             disc.setLife(costRotation);     // reduce life
-            disc.setRotationSpeed(disc.selected, -0.05);
+            float newSpeed = disc.getRotationSpeed(disc.selected)-0.05;
+            disc.setRotationSpeed(disc.selected, -.05);
+            //update ui
+            ofxUICanvas *canvas = static_cast <ofxUICanvas*> (ui[disc.selected]);
+            ofxUISlider *slider = static_cast <ofxUISlider*> (canvas->getWidget("rotation"+ofToString(disc.selected+1)));
+            slider->setValue(disc.getNetRotationSpeed(disc.selected));
             
             //change sound
-            float netSpeed = abs(abs(disc.getRotationSpeed(disc.selected))-abs(disc.getRotationSpeed(disc.selected-1)));
+            float netSpeed = abs(disc.getNetRotationSpeed(disc.selected));
             float beat = ofMap(netSpeed, 0, 10, 0, 1000);
             sound.synth.setParameter("bpm"+ofToString(disc.selected), beat);
         }
@@ -714,9 +723,9 @@ void ofApp::keyPressed(int key){
             sound.synth.setParameter("release"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 3));
             
             // when texture is set to blank, rotation stops
-            disc.setRotationSpeed(disc.selected, -(disc.getRotationSpeed(disc.selected)+disc.getRotationSpeed(disc.selected-1)));
+            disc.setNetRotationSpeed(disc.selected, -(disc.getNetRotationSpeed(disc.selected)+disc.getNetRotationSpeed(disc.selected-1)));
             
-            //            disc.setRotation(disc.selected, -disc.getRotationSpeed(disc.selected));
+            //            disc.setRotation(disc.selected, -disc.getNetRotationSpeed(disc.selected));
             sound.synth.setParameter("bpm"+ofToString(disc.selected), 0);
         }
     }
