@@ -8,10 +8,11 @@
 
 #include "Groove.h"
 
-void Groove::setup(Disc* disc){
+void Groove::setup(Disc* disc, Player* player){
     
     //groove should not operate without getting disc
     this->disc = disc;
+    this->me = player;
     
     
     for(int i = 0; i < disc->getDiscIndex(); i++){
@@ -50,16 +51,13 @@ void Groove::setup(Disc* disc){
     }
     
     // life bar & life
-    lifeBarFrame.x = ofGetWidth()/2-42.5;
-    lifeBarFrame.y = -ofGetHeight()/2+17.5;
-    lifeBarFrame.width = 20;
-    lifeBarFrame.height = 105;
     
 }
 
 void Groove::update(){
     
-    float barHeight = ofMap(disc->getLife(), 0, 100, 0, ofGetHeight());
+    
+    float barHeight = ofMap(me->getLife(), 0, 100, 0, ofGetHeight());
     lifeBar.x = ofGetWidth()/2-10;
     lifeBar.y = -ofGetHeight()/2+(ofGetHeight()-barHeight);
     lifeBar.width = 10;
@@ -96,7 +94,7 @@ void Groove::update(){
 void Groove::draw(){
     
     
-    ofSetColor(ofColor::black);
+    ofSetColor(33);
     ofFill();
     ofSetSphereResolution(20);
     ofDrawSphere(0, 0, disc->origin);
@@ -115,19 +113,19 @@ void Groove::draw(){
         //draw circles
         ofSetLineWidth(3);
         ofNoFill();
-        if( i != disc->selected && disc->isMute(i) == 1) ofSetColor(ofColor::lightGrey);
-        else if( i == disc->selected && disc->isMute(disc->selected) == 1) ofSetColor(ofColor::lightPink);
-        else if( i == disc->selected && disc->isMute(disc->selected) == 0) ofSetColor(ofColor::red);
-        else ofSetColor(ofColor::black);
+        if( i != me->getDiscIndex() && disc->isMute(i) == 1) ofSetColor(ofColor::lightGrey);
+        else if( i == me->getDiscIndex() && disc->isMute(me->getDiscIndex()) == 1) ofSetColor(ofColor::lightPink);
+        else if( i == me->getDiscIndex() && disc->isMute(me->getDiscIndex()) == 0) ofSetColor(me->getColor());
+        else ofSetColor(33);
         
         ofSetCircleResolution(70);
         ofCircle(0,0,disc->getPosition(i), disc->getRadius(i-1));
         ofCircle(0,0,disc->getPosition(i), disc->getRadius(i));
         
-        if( i != disc->selected && disc->isMute(i) == 1) ofSetColor(ofColor::lightGrey);
-        else if( i == disc->selected && disc->isMute(disc->selected) == 1) ofSetColor(ofColor::lightPink);
-        else if( i == disc->selected && disc->isMute(disc->selected) == 0) ofSetColor(ofColor::red);
-        else ofSetColor(ofColor::black);
+        if( i != me->getDiscIndex() && disc->isMute(i) == 1) ofSetColor(ofColor::lightGrey);
+        else if( i == me->getDiscIndex() && disc->isMute(me->getDiscIndex()) == 1) ofSetColor(ofColor::lightPink);
+        else if( i == me->getDiscIndex() && disc->isMute(me->getDiscIndex()) == 0) ofSetColor(me->getColor());
+        else ofSetColor(33);
         ofFill();
         
         //get texture type and draw
