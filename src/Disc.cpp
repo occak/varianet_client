@@ -181,11 +181,13 @@ float Disc::setRotation(int index, float newRotation){
     return rotation[index];
 }
 //----------------------------------
+
 float Disc::getRotationSpeed(int index) const{
     
     return rotationSpeed[index];
     
 }
+//----------------------------------
 
 void Disc::setRotationSpeed(int index, float addSpeed){
     
@@ -193,6 +195,7 @@ void Disc::setRotationSpeed(int index, float addSpeed){
     return rotationSpeed[index] += addSpeed;
     
 }
+//----------------------------------
 
 float Disc::getNetRotationSpeed(int index) const{
     

@@ -103,7 +103,7 @@ void ofApp::guiEvent(ofxUIEventArgs &e)
                 soundChange("bpm", i, beat);
                 
                 //send to server
-                string change = "rotationSpeed//"+ ofToString(i)+": "+ ofToString(slider->getScaledValue());
+                string change = "rotationSpeed//"+ ofToString(i)+": "+ ofToString(newRotation);
                 client.send(change);
                 
             }
@@ -280,8 +280,8 @@ void ofApp::guiEvent(ofxUIEventArgs &e)
 //--------------------------------------------------------------
 void ofApp::update(){
     
-//    disc.update();
-//    groove.update();
+    //    disc.update();
+    //    groove.update();
     
     for(int i = 0; i< disc.getDiscIndex(); i++){
         float amountFreq = ofMap(abs(disc.getNetRotationSpeed(i)), 0, 10, 0, 5000);
@@ -307,8 +307,8 @@ void ofApp::update(){
                         if(nameValue[0] == "radius"+ofToString(i)) {
                             disc.setRadius(i, ofToFloat(nameValue[1]));
                             //sound
-//                            float q = ofMap(disc.getRadius(i)-disc.getRadius(i-1), 15, 100, 10, 0);
-//                            soundChange("q", i, q);
+                            float q = ofMap(disc.getRadius(i)-disc.getRadius(i-1), 15, 100, 10, 0);
+                            soundChange("q", i, q);
                             //ui
                             ofxUICanvas *canvas = static_cast<ofxUICanvas*>(ui[i]);
                             ofxUISlider *slider = static_cast<ofxUISlider*>(canvas->getWidget("radius"+ofToString(i+1)));
@@ -317,10 +317,10 @@ void ofApp::update(){
                         if(nameValue[0] == "density"+ofToString(i)) {
                             disc.setDensity (i, ofToFloat(nameValue[1]));
                             //sound
-//                            float envelopeCoeff = ofMap(disc.getDensity(i), 1, 30, 1, 5);
-//                            float pulseRatio = ofMap(disc.getDensity(i), 1, 30, 0.001, 1);
-//                            soundChange("envelopeWidth", i, envelopeCoeff);
-//                            soundChange("pulseLength", i, pulseRatio);
+                            float envelopeCoeff = ofMap(disc.getDensity(i), 1, 30, 1, 5);
+                            float pulseRatio = ofMap(disc.getDensity(i), 1, 30, 0.001, 1);
+                            soundChange("envelopeWidth", i, envelopeCoeff);
+                            soundChange("pulseLength", i, pulseRatio);
                             //ui
                             ofxUICanvas *canvas = static_cast<ofxUICanvas*>(ui[i]);
                             ofxUISlider *slider = static_cast<ofxUISlider*>(canvas->getWidget("density"+ofToString(i+1)));
@@ -332,9 +332,9 @@ void ofApp::update(){
                         if(nameValue[0] == "rotationSpeed"+ofToString(i)) {
                             disc.setNetRotationSpeed (i, ofToFloat(nameValue[1]));
                             //sound
-//                            float netSpeed = abs(abs(disc.getNetRotationSpeed(i))-abs(disc.getNetRotationSpeed(i-1)));
-//                            float beat = ofMap(netSpeed, 0, 10, 0, 1000);
-//                            soundChange("bpm", i, beat);
+                            float netSpeed = abs(disc.getNetRotationSpeed(i));
+                            float beat = ofMap(netSpeed, 0, 10, 0, 1000);
+                            soundChange("bpm", i, beat);
                             //ui
                             ofxUICanvas *canvas = static_cast <ofxUICanvas*> (ui[i]);
                             ofxUISlider *slider = static_cast <ofxUISlider*> (canvas->getWidget("rotation"+ofToString(i+1)));
@@ -343,7 +343,7 @@ void ofApp::update(){
                         if(nameValue[0] == "texture"+ofToString(i)) {
                             disc.setTexture (i, ofToFloat(nameValue[1]));
                             //sound
-//                            soundChange("envelope", i, disc.getTexture(i));
+                            soundChange("envelope", i, disc.getTexture(i));
                             
                             //ui
                             ofxUICanvas *canvas = static_cast<ofxUICanvas*>(ui[i]);
@@ -368,14 +368,16 @@ void ofApp::update(){
                         }
                         if(nameValue[0] == "posOffset"+ofToString(i)) {
                             disc.setPosOffset (i, ofToFloat(nameValue[1]));
-//                            //sound
-//                            float amountFreq = ofMap(abs(disc.getNetRotationSpeed(i)), 0, 10, 0, 5000);
-//                            float amountMod = ofMap(abs(disc.getPosition(i)), 0, 50, 0, 5000);
-//                            soundChange("amountFreq", i, amountFreq);
-//                            soundChange("amountMod", i, amountMod);
+                            //sound
+                            float amountFreq = ofMap(abs(disc.getNetRotationSpeed(i)), 0, 10, 0, 5000);
+                            float amountMod = ofMap(abs(disc.getPosition(i)), 0, 50, 0, 5000);
+                            soundChange("amountFreq", i, amountFreq);
+                            soundChange("amountMod", i, amountMod);
                         }
                         if(nameValue[0] == "mute"+ofToString(i) && ofToInt(nameValue[1]) == 1 ) {
                             disc.toggleMute(i);
+                            if(disc.isMute(i) == 0) soundChange("envelope", i, disc.getTexture(i));
+                            else soundChange("envelope", i, 0);
                         }
                         if(nameValue[0] == "perlin"+ofToString(i) && ofToInt(nameValue[1]) == 1 ) {
                             disc.toggleMoving(i);
@@ -383,23 +385,38 @@ void ofApp::update(){
                     }
                 }
                 
+            }
+            else if (title == "scale"){
                 //sound values
-                if(received[(disc.getDiscIndex()*9)+1] == "scale"){
-                    vector<string> scaleValue;
-                    scaleValue = ofSplitString(received[(disc.getDiscIndex()*9)+2], ": ");
-                    for(int i = 0; i < scaleValue.size(); i++){
-                        sound.scale[i] = ofToFloat(scaleValue[i]);
-                    }
+                vector<string> scaleValue;
+                scaleValue = ofSplitString(received[1], ": ");
+                for(int i = 0; i < scaleValue.size(); i++){
+                    sound.scale.push_back(ofToFloat(scaleValue[i]));
                 }
+                
                 //set up synths
                 sound.setup(&disc);
+            }
+            
+            else if( title == "playerInfo" ){
+                Player* _player = new Player();
+                for(int i = 1; i < received.size(); i++ ){
+                    vector<string> playerData;
+                    playerData = ofSplitString(received[i], ": ");
+                    if (playerData[0] == "color") _player->setColor(ofFromString<ofColor>(playerData[1]));
+                    if (playerData[0] == "life") _player->setLife(ofToFloat(playerData[1]));
+                    if (playerData[0] == "index") _player->setDiscIndex(ofToInt(playerData[1]));
+                }
+                _player->setConnection(true);
+                me = _player;
+                
             }
             
             else if (title == "rotationSpeed"){
                 vector<string> nameValue;
                 nameValue = ofSplitString(received[1], ": ");
                 int index = ofToInt(nameValue[0]);
-                disc.setNetRotationSpeed(index, ofToFloat(nameValue[1]));
+                disc.setRotationSpeed(index, ofToFloat(nameValue[1]));
                 
                 //change sound
                 float netSpeed = abs(disc.getNetRotationSpeed(index));
@@ -492,11 +509,11 @@ void ofApp::update(){
                 disc.resetPerlin[ofToInt(nameValue[0])] = ofToInt(nameValue[1]);
             }
             
-//            else if (title == "zPosition"){
-//                vector<string> nameValue;
-//                nameValue = ofSplitString(received[1], ": ");
-//                disc.setPosition(ofToInt(nameValue[0]), ofToFloat(nameValue[1]));
-//            }
+            //            else if (title == "zPosition"){
+            //                vector<string> nameValue;
+            //                nameValue = ofSplitString(received[1], ": ");
+            //                disc.setPosition(ofToInt(nameValue[0]), ofToFloat(nameValue[1]));
+            //            }
         }
     }
     
@@ -530,13 +547,9 @@ void ofApp::draw(){
     groove.draw();
     cam.end();
     
-    ofSetColor(ofColor::gray);
-    ofNoFill();
-    ofRectRounded(groove.lifeBarFrame, 5);
-    
-    ofSetColor(ofColor::darkGray);
-    ofFill();
-    ofRectRounded(groove.lifeBar, 3);
+        ofSetColor(me->getColor());
+        ofFill();
+        ofRect(groove.lifeBar);
     
     ofPopMatrix();
     
@@ -556,7 +569,6 @@ void ofApp::keyPressed(int key){
         
         if(disc.getLife() > 0) {
             disc.setLife(costRotation);     // reduce life
-            float newSpeed = disc.getRotationSpeed(disc.selected)+0.05;
             disc.setRotationSpeed(disc.selected, +.05);
             
             //update ui
@@ -568,6 +580,11 @@ void ofApp::keyPressed(int key){
             float netSpeed = abs(disc.getNetRotationSpeed(disc.selected));
             float beat = ofMap(netSpeed, 0, 10, 0, 1000);
             sound.synth.setParameter("bpm"+ofToString(disc.selected), beat);
+            
+            //send to server
+            float newRotation = slider->getScaledValue()-disc.getNetRotationSpeed(disc.selected);
+            string change = "rotationSpeed//"+ ofToString(disc.selected)+": "+ ofToString(+0.05);
+            client.send(change);
         }
     }
     
@@ -575,8 +592,8 @@ void ofApp::keyPressed(int key){
         
         if(disc.getLife() > 0) {
             disc.setLife(costRotation);     // reduce life
-            float newSpeed = disc.getRotationSpeed(disc.selected)-0.05;
             disc.setRotationSpeed(disc.selected, -.05);
+            
             //update ui
             ofxUICanvas *canvas = static_cast <ofxUICanvas*> (ui[disc.selected]);
             ofxUISlider *slider = static_cast <ofxUISlider*> (canvas->getWidget("rotation"+ofToString(disc.selected+1)));
@@ -586,10 +603,15 @@ void ofApp::keyPressed(int key){
             float netSpeed = abs(disc.getNetRotationSpeed(disc.selected));
             float beat = ofMap(netSpeed, 0, 10, 0, 1000);
             sound.synth.setParameter("bpm"+ofToString(disc.selected), beat);
+            
+            //send to server
+            float newRotation = slider->getScaledValue()-disc.getNetRotationSpeed(disc.selected);
+            string change = "rotationSpeed//"+ ofToString(disc.selected)+": "+ ofToString(-0.05);
+            client.send(change);
         }
     }
     
-    if(key == 'i'){
+    if(key == 'w'){
         
         if(disc.selected + 1 < disc.getDiscIndex()){
             
@@ -608,7 +630,7 @@ void ofApp::keyPressed(int key){
         }
     }
     
-    if(key == 'k'){
+    if(key == 's'){
         if(disc.selected - 1 > -1){
             disc.selected--;
             for(int i = 0; i < disc.getDiscIndex(); i++){
@@ -632,113 +654,59 @@ void ofApp::keyPressed(int key){
         }
     }
     
-    if(key == '1') {
-        if(disc.getLife() > 0){
-            disc.setLife(costTexture);
-            disc.setTexture(disc.selected, 1);
-            if(disc.isMute(disc.selected) == 0){
-                disc.setEnvelope(disc.selected, 1);
-                sound.synth.setParameter("attack"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 0));
-                sound.synth.setParameter("decay"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 1));
-                sound.synth.setParameter("sustain"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 2));
-                sound.synth.setParameter("release"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 3));
-            }
-            else{
-                disc.setEnvelope(disc.selected, 0);
-                sound.synth.setParameter("attack"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 0));
-                sound.synth.setParameter("decay"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 1));
-                sound.synth.setParameter("sustain"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 2));
-                sound.synth.setParameter("release"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 3));
-            }
-        }
-    }
-    if(key == '2') {
-        if(disc.getLife() > 0){
-            disc.setLife(costTexture);
-            disc.setTexture(disc.selected, 2);
-            if(disc.isMute(disc.selected) == 0){
-                disc.setEnvelope(disc.selected, 2);
-                sound.synth.setParameter("attack"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 0));
-                sound.synth.setParameter("decay"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 1));
-                sound.synth.setParameter("sustain"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 2));
-                sound.synth.setParameter("release"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 3));
-            }
-            else{
-                disc.setEnvelope(disc.selected, 0);
-                sound.synth.setParameter("attack"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 0));
-                sound.synth.setParameter("decay"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 1));
-                sound.synth.setParameter("sustain"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 2));
-                sound.synth.setParameter("release"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 3));
-            }
-        }
-    }
-    if(key == '3') {
-        if(disc.getLife() > 0){
-            disc.setLife(costTexture);
-            disc.setTexture(disc.selected, 3);
-            if(disc.isMute(disc.selected) == 0){
-                disc.setEnvelope(disc.selected, 3);
-                sound.synth.setParameter("attack"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 0));
-                sound.synth.setParameter("decay"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 1));
-                sound.synth.setParameter("sustain"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 2));
-                sound.synth.setParameter("release"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 3));
-            }
-            else{
-                disc.setEnvelope(disc.selected, 0);
-                sound.synth.setParameter("attack"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 0));
-                sound.synth.setParameter("decay"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 1));
-                sound.synth.setParameter("sustain"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 2));
-                sound.synth.setParameter("release"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 3));
-            }
-        }
-    }
-    if(key == '4') {
-        if(disc.getLife() > 0){
-            disc.setLife(costTexture);
-            disc.setTexture(disc.selected, 4);
-            if(disc.isMute(disc.selected) == 0){
-                disc.setEnvelope(disc.selected, 4);
-                sound.synth.setParameter("attack"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 0));
-                sound.synth.setParameter("decay"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 1));
-                sound.synth.setParameter("sustain"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 2));
-                sound.synth.setParameter("release"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 3));
-            }
-            else{
-                disc.setEnvelope(disc.selected, 0);
-                sound.synth.setParameter("attack"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 0));
-                sound.synth.setParameter("decay"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 1));
-                sound.synth.setParameter("sustain"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 2));
-                sound.synth.setParameter("release"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 3));
-            }
-        }
-    }
-    if(key == '0') {
-        if(disc.getLife() > 0){
-            disc.setLife(costTexture);
-            disc.setTexture(disc.selected, 0);
-            disc.setEnvelope(disc.selected, 0);
-            sound.synth.setParameter("attack"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 0));
-            sound.synth.setParameter("decay"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 1));
-            sound.synth.setParameter("sustain"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 2));
-            sound.synth.setParameter("release"+ofToString(disc.selected),disc.getEnvelope(disc.selected, 3));
-            
-            // when texture is set to blank, rotation stops
-            disc.setNetRotationSpeed(disc.selected, -(disc.getNetRotationSpeed(disc.selected)+disc.getNetRotationSpeed(disc.selected-1)));
-            
-            //            disc.setRotation(disc.selected, -disc.getNetRotationSpeed(disc.selected));
-            sound.synth.setParameter("bpm"+ofToString(disc.selected), 0);
-        }
-    }
+    //    if(key == '1') {
+    //        if(disc.getLife() > 0){
+    //            disc.setLife(costTexture);
+    //            disc.setTexture(disc.selected, 1);
+    //            soundChange("envelope", disc.selected, 1);
+    //
+    //        }
+    //    }
+    //    if(key == '2') {
+    //        if(disc.getLife() > 0){
+    //            disc.setLife(costTexture);
+    //            disc.setTexture(disc.selected, 2);
+    //            soundChange("envelope", disc.selected, 2);
+    //        }
+    //    }
+    //    if(key == '3') {
+    //        if(disc.getLife() > 0){
+    //            disc.setLife(costTexture);
+    //            disc.setTexture(disc.selected, 3);
+    //            soundChange("envelope", disc.selected, 3);
+    //        }
+    //    }
+    //    if(key == '4') {
+    //        if(disc.getLife() > 0){
+    //            disc.setLife(costTexture);
+    //            disc.setTexture(disc.selected, 4);
+    //            soundChange("envelope", disc.selected, 0);
+    //        }
+    //    }
+    //    if(key == '0') {
+    //        if(disc.getLife() > 0){
+    //            disc.setLife(costTexture);
+    //            disc.setTexture(disc.selected, 0);
+    //            soundChange("envelope", disc.selected, 0);
+    //
+    //            // when texture is set to blank, rotation stops
+    //            disc.setRotationSpeed(disc.selected, -(disc.getRotationSpeed(disc.selected)+disc.getRotationSpeed(disc.selected-1)));
+    //
+    //            //            disc.setRotation(disc.selected, -disc.getRotationSpeed(disc.selected));
+    //            soundChange("bpm", disc.selected, 0);
+    //        }
+    //    }
+    
     if(key == 'f') {
         fullScreen = !fullScreen;
         ofSetFullscreen(fullScreen);
     }
-    if(key == 'w' && disc.selected != -1 ) {
+    if(key == 'i' && disc.selected != -1 ) {
         disc.setPosition(disc.selected, disc.getPosition(disc.selected)+1);
         float delayTime = ofMap(disc.getPosition(disc.selected), 0, 10, 0, 1);
         sound.synth.setParameter("factor"+ofToString(disc.selected), delayTime);
     }
-    if(key == 's' && disc.selected != -1 ) {
+    if(key == 'k' && disc.selected != -1 ) {
         disc.setPosition(disc.selected, disc.getPosition(disc.selected)-1);
         float delayTime = ofMap(disc.getPosition(disc.selected), 0, 10, 0, 1);
         sound.synth.setParameter("factor"+ofToString(disc.selected), delayTime);

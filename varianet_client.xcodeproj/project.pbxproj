@@ -78,6 +78,7 @@
 		B9947CC302719F5714438A8D /* ofxUITextInput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7847ACD0FD7DDAE6478B9B7B /* ofxUITextInput.cpp */; };
 		BB4A3A16145CD835A96AC7C0 /* ADSR.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7E4080D90808304BB6ADBDA1 /* ADSR.cpp */; };
 		BBAB23CB13894F3D00AA2426 /* GLUT.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = BBAB23BE13894E4700AA2426 /* GLUT.framework */; };
+		BE7304E11AD9347F00991D03 /* Player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BE7304DF1AD9347F00991D03 /* Player.cpp */; };
 		BED9A40589B3C3818B5CDA19 /* BufferFiller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3331D9C56D08FB10A7627E89 /* BufferFiller.cpp */; };
 		BEE5BAB51ACD6B860063FC38 /* Disc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BEE5BAAC1ACD6B860063FC38 /* Disc.cpp */; };
 		BEE5BAB61ACD6B860063FC38 /* Groove.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BEE5BAAE1ACD6B860063FC38 /* Groove.cpp */; };
@@ -333,6 +334,8 @@
 		BB64A42D06174B2614FAA75B /* DelayUtils.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = DelayUtils.h; path = "../../openFrameworks/of_v0.8.4_osx_release/addons/ofxTonic-master/src/Tonic/DelayUtils.h"; sourceTree = SOURCE_ROOT; };
 		BBAB23BE13894E4700AA2426 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = ../../openFrameworks/of_v0.8.4_osx_release/libs/glut/lib/osx/GLUT.framework; sourceTree = "<group>"; };
 		BC30920A3770AF92ABC0D364 /* StereoDelay.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = StereoDelay.cpp; path = "../../openFrameworks/of_v0.8.4_osx_release/addons/ofxTonic-master/src/Tonic/StereoDelay.cpp"; sourceTree = SOURCE_ROOT; };
+		BE7304DF1AD9347F00991D03 /* Player.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Player.cpp; path = ../../varianet_server/src/Player.cpp; sourceTree = "<group>"; };
+		BE7304E01AD9347F00991D03 /* Player.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Player.h; path = ../../varianet_server/src/Player.h; sourceTree = "<group>"; };
 		BEE5BAAC1ACD6B860063FC38 /* Disc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Disc.cpp; sourceTree = "<group>"; };
 		BEE5BAAD1ACD6B860063FC38 /* Disc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Disc.h; sourceTree = "<group>"; };
 		BEE5BAAE1ACD6B860063FC38 /* Groove.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Groove.cpp; sourceTree = "<group>"; };
@@ -697,6 +700,8 @@
 				BEE5BAAF1ACD6B860063FC38 /* Groove.h */,
 				BEE5BAB31ACD6B860063FC38 /* Sound.cpp */,
 				BEE5BAB41ACD6B860063FC38 /* Sound.h */,
+				BE7304DF1AD9347F00991D03 /* Player.cpp */,
+				BE7304E01AD9347F00991D03 /* Player.h */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;
@@ -956,6 +961,7 @@
 				820F4D955C6C9F144B9B3CFF /* ControlXYSpeed.cpp in Sources */,
 				BEE5BAB61ACD6B860063FC38 /* Groove.cpp in Sources */,
 				6D6A8FCDB37B77BB6C36169E /* DelayUtils.cpp in Sources */,
+				BE7304E11AD9347F00991D03 /* Player.cpp in Sources */,
 				8BB9FDF307DCB204CE8AA997 /* Effect.cpp in Sources */,
 				7CD15114DE0AB3BF32376263 /* Filters.cpp in Sources */,
 				F274D3323EBBE88EDA5368D1 /* FilterUtils.cpp in Sources */,

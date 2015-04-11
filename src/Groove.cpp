@@ -59,14 +59,11 @@ void Groove::setup(Disc* disc){
 
 void Groove::update(){
     
-    // update life bar & frame
-    lifeBarFrame.x = ofGetWidth()/2-42.5;
-    lifeBarFrame.y = -ofGetHeight()/2+17.5;
-    
-    lifeBar.x = ofGetWidth()/2-40;
-    lifeBar.y = -ofGetHeight()/2+20+(100 - disc->getLife());
-    lifeBar.width = 15;
-    lifeBar.height = disc->getLife();
+    float barHeight = ofMap(disc->getLife(), 0, 100, 0, ofGetHeight());
+    lifeBar.x = ofGetWidth()/2-10;
+    lifeBar.y = -ofGetHeight()/2+(ofGetHeight()-barHeight);
+    lifeBar.width = 10;
+    lifeBar.height = barHeight;
     
     
     // update mesh position

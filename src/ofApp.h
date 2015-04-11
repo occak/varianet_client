@@ -6,6 +6,7 @@
 #include "Disc.h"
 #include "Sound.h"
 #include "ofxNetwork.h"
+#include "Player.h"
 
 
 class ofApp : public ofBaseApp{
@@ -61,6 +62,9 @@ private:
     Groove groove;
     Disc disc;
     Sound sound;
+    
+    Player* me;
+    vector<Player*> otherPlayers;
     
     vector<ofxUICanvas *> ui;
 
