@@ -34,7 +34,9 @@ class Disc{
     
     float getRadius(int index) const;
     float setRadius(int index, float size);
-    float setThickness(int index, float size);
+    
+    float getThickness(int index) const;
+    void setThickness(int index, float size);
     
     int getDensity(int index) const;
     int setDensity(int index, int newDensity);

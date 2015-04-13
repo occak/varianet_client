@@ -60,6 +60,10 @@ void ofApp::setup(){
         
     }
     
+    updateButtons = new ofxUICanvas();
+    updateButtons->setPosition(0, ofGetHeight()/2);
+    updateButtons->setDrawBack(false);
+    updateButtons->setFontSize(OFX_UI_FONT_SMALL, 5);
     
     //set up audio stream & synth network
     phase = 0;
@@ -272,6 +276,16 @@ void ofApp::guiEvent(ofxUIEventArgs &e)
             string change = "texture//"+ ofToString(i)+": "+ ofToString(disc.getTexture(i));
             client.send(change);
         }
+    }
+    
+    if(e.getKind() == OFX_UI_WIDGET_LABELTOGGLE){
+        ofxUILabelToggle *updateButton = static_cast <ofxUILabelToggle*> (e.getToggle());
+        cout<< updateButton->getValue() <<endl;
+//        if(updateButton->getValue() == false){
+//            updateButton->setValue(true);
+//            me->setLife(me->getLife()+5);
+//        }
+//        else updateButton->setValue(true);
     }
     
 }
@@ -732,6 +746,13 @@ void ofApp::mouseReleased(int x, int y, int button){
         string lifeUpdate;
         lifeUpdate = "life//"+ofToString(me->getLife());
         client.send(lifeUpdate);
+        
+        //update buttons
+        updateButtons->addLabelToggle("Groove"+ofToString(me->getDiscIndex()+1)+" radius changed to "+ofToString((int)disc.getThickness(me->getDiscIndex())), false)->setColorBack(me->getColor());
+        
+//        ofxUILabelToggle* widget = new ofxUILabelToggle("Groove"+ofToString(me->getDiscIndex()+1)+" radius changed to "+ofToString(disc.getThickness(me->getDiscIndex())), false, 200, 20, OFX_UI_FONT_SMALL, true);
+//        updateButtons.push_back(widget);
+//        cout<< updateButtons[0] << endl;
     }
     else if(densityChanged){
         densityChanged = false;

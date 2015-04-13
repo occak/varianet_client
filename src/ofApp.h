@@ -67,6 +67,8 @@ private:
     vector<Player*> otherPlayers;
     
     vector<ofxUICanvas *> ui;
+//    vector<ofxUILabelToggle *> updateButtons;
+    ofxUICanvas *updateButtons;
 
 
 };

@@ -145,13 +145,18 @@ float Disc::setRadius(int index, float size){
 }
 //----------------------------------
 
-float Disc::setThickness(int index, float size){
+float Disc::getThickness(int index) const{
+    
+    return radii[index]-radii[index-1];
+    
+}
+
+void Disc::setThickness(int index, float size){
     
     float change = size - (radii[index]-radii[index-1]); // change in the difference of size between the inner circle
     for (int i = index; i < getDiscIndex(); i++) {
         radii[i] = radii[i] + change;
     }
-    return radii[index];
 }
 //----------------------------------
 
