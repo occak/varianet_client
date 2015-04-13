@@ -63,14 +63,15 @@ void ofApp::setup(){
     updateButtons = new ofxUICanvas();
     updateButtons->setPosition(0, ofGetHeight()/2);
     updateButtons->setDrawBack(false);
-    updateButtons->setFontSize(OFX_UI_FONT_SMALL, 5);
+    updateButtons->setFontSize(OFX_UI_FONT_SMALL, 5.8);
+    ofAddListener(updateButtons->newGUIEvent, this, &ofApp::guiEvent);
     
     //set up audio stream & synth network
     phase = 0;
     volume = 0;
     ofSoundStreamSetup(2, 0); // 2 out, 0 in
     
-    sound.setup(&disc);
+    //    sound.setup(&disc);
     
     // set up game costs
     costRadius = 1;
@@ -95,7 +96,7 @@ void ofApp::guiEvent(ofxUIEventArgs &e)
         if(e.getName() == "rotation" + ofToString(i+1)){
             ofxUISlider *slider = e.getSlider();
             
-            if(me->getLife()>0){
+            if(me->getLife()>0 && mReleased == false){
                 rotationChanged = true;
                 float newRotation = slider->getScaledValue()-disc.getNetRotationSpeed(i);
                 disc.setRotationSpeed(i, newRotation);
@@ -113,8 +114,7 @@ void ofApp::guiEvent(ofxUIEventArgs &e)
         }
         else if(e.getName() == "radius" + ofToString(i+1)){
             ofxUISlider *slider = e.getSlider();
-            
-            if(me->getLife()> 0) {
+            if(me->getLife()> 0 && mReleased == false) {
                 radiusChanged = true;
                 disc.setThickness(i, slider->getScaledValue());
                 
@@ -129,7 +129,7 @@ void ofApp::guiEvent(ofxUIEventArgs &e)
         }
         else if(e.getName() == "density" + ofToString(i+1)){
             ofxUISlider *slider = e.getSlider();
-            if(me->getLife()> 0) {
+            if(me->getLife()> 0 && mReleased == false) {
                 densityChanged = true;
                 disc.setDensity(i, slider->getScaledValue());
                 
@@ -277,17 +277,15 @@ void ofApp::guiEvent(ofxUIEventArgs &e)
             client.send(change);
         }
     }
-    
     if(e.getKind() == OFX_UI_WIDGET_LABELTOGGLE){
+        
         ofxUILabelToggle *updateButton = static_cast <ofxUILabelToggle*> (e.getToggle());
-        cout<< updateButton->getValue() <<endl;
-//        if(updateButton->getValue() == false){
-//            updateButton->setValue(true);
-//            me->setLife(me->getLife()+5);
-//        }
-//        else updateButton->setValue(true);
+        if(updateButton->getValue() == true){
+            me->setLife(me->getLife()+5);
+        }
+        else updateButton->setValue(true);
+        
     }
-    
 }
 
 //--------------------------------------------------------------
@@ -422,18 +420,21 @@ void ofApp::update(){
                 }
                 _player->setConnection(true);
                 me = _player;
-                groove.setup(&disc, me);
+                groove.setup(&disc, me, otherPlayers);
             }
             
             else if (title == "otherPlayers"){
-                if(received.size() > 6){
-                    
-                    for(int i = 1; i < received.size(); i += 5){
-                        
-                    Player* _player = new Player();
-                    
-                    }
+                Player* _player = new Player();
+                for(int i = 1; i < received.size(); i++ ){
+                    vector<string> playerData;
+                    playerData = ofSplitString(received[i], ": ");
+                    if (playerData[0] == "IP") _player->setIP(playerData[1]);
+                    if (playerData[0] == "color") _player->setColor(ofFromString<ofColor>(playerData[1]));
+                    if (playerData[0] == "life") _player->setLife(ofToFloat(playerData[1]));
+                    if (playerData[0] == "index") _player->setDiscIndex(ofToInt(playerData[1]));
                 }
+                otherPlayers.push_back(_player);
+                groove.setup(&disc, me, otherPlayers);
             }
             
             else if (title == "rotationSpeed"){
@@ -572,9 +573,9 @@ void ofApp::draw(){
     groove.draw();
     cam.end();
     
-        ofSetColor(me->getColor());
-        ofFill();
-        ofRect(groove.lifeBar);
+    ofSetColor(me->getColor());
+    ofFill();
+    ofRect(groove.lifeBar);
     
     ofPopMatrix();
     
@@ -641,7 +642,7 @@ void ofApp::keyPressed(int key){
         if(me->getDiscIndex() + 1 < disc.getDiscIndex()){
             
             me->setDiscIndex(me->getDiscIndex() + 1);
-//            disc.selected++;
+            //            disc.selected++;
             for(int i = 0; i < disc.getDiscIndex(); i++){
                 ui[i]->setVisible(false);
             }
@@ -649,7 +650,7 @@ void ofApp::keyPressed(int key){
         }
         else {
             me->setDiscIndex(0);
-//            disc.selected = 0;
+            //            disc.selected = 0;
             for(int i = 0; i < disc.getDiscIndex(); i++){
                 ui[i]->setVisible(false);
             }
@@ -660,7 +661,7 @@ void ofApp::keyPressed(int key){
     if(key == 's'){
         if(me->getDiscIndex() - 1 > -1){
             me->setDiscIndex(me->getDiscIndex() - 1);
-//            disc.selected--;
+            //            disc.selected--;
             for(int i = 0; i < disc.getDiscIndex(); i++){
                 ui[i]->setVisible(false);
             }
@@ -732,11 +733,14 @@ void ofApp::mouseDragged(int x, int y, int button){
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
     
+    mReleased = false;
     
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
+    
+    mReleased = true;
     
     if(radiusChanged) {
         radiusChanged = false;
@@ -748,11 +752,15 @@ void ofApp::mouseReleased(int x, int y, int button){
         client.send(lifeUpdate);
         
         //update buttons
-        updateButtons->addLabelToggle("Groove"+ofToString(me->getDiscIndex()+1)+" radius changed to "+ofToString((int)disc.getThickness(me->getDiscIndex())), false)->setColorBack(me->getColor());
+        //        ofxUILabelToggle* widget = new ofxUILabelToggle("Groove"+ofToString(me->getDiscIndex()+1)+" radius changed to "+ofToString(disc.getThickness(me->getDiscIndex())), false);
+        //        widget->setColorBack(me->getColor());
+        //        updateButtons->addWidget(widget);
         
-//        ofxUILabelToggle* widget = new ofxUILabelToggle("Groove"+ofToString(me->getDiscIndex()+1)+" radius changed to "+ofToString(disc.getThickness(me->getDiscIndex())), false, 200, 20, OFX_UI_FONT_SMALL, true);
-//        updateButtons.push_back(widget);
-//        cout<< updateButtons[0] << endl;
+        updateButtons->addEmbeddedWidget(new ofxUILabelToggle("Groove"+ofToString(me->getDiscIndex()+1)+" radius changed to "+ofToString((int)disc.getThickness(me->getDiscIndex())), false));
+        updateButtons->getEmbeddedWidget(0)->setColorBack(me->getColor());
+        
+        cout<< updateButtons->getEmbeddedWidgetsSize() <<endl;
+        
     }
     else if(densityChanged){
         densityChanged = false;

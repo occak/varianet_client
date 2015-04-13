@@ -58,6 +58,7 @@ class ofApp : public ofBaseApp{
 private:
     
     bool fullScreen;
+    bool mReleased;
     
     Groove groove;
     Disc disc;

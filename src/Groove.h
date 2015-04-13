@@ -23,7 +23,7 @@ class Groove{
     
 public:
     
-    void setup(Disc* disc, Player *player);
+    void setup(Disc* disc, Player *player, vector<Player *> otherPlayers);
     void update();
     void draw();
     

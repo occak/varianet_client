@@ -8,7 +8,7 @@
 
 #include "Groove.h"
 
-void Groove::setup(Disc* disc, Player* player){
+void Groove::setup(Disc* disc, Player* player, vector<Player *> otherPlayers){
     
     //groove should not operate without getting disc
     this->disc = disc;
