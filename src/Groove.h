@@ -33,6 +33,7 @@ public:
     bool turn = true;
     Disc* disc;
     Player* me;
+    vector<Player *> otherPlayers;
     
     vector<ofMesh> mesh;
     

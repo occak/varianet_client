@@ -437,6 +437,24 @@ void ofApp::update(){
                 groove.setup(&disc, me, otherPlayers);
             }
             
+            else if (title == "otherPlayersIndex" && otherPlayers.size() > 0){  //don't go in here unless there are other players registered
+                for(int i = 1; i < received.size(); i++ ){
+                    vector<string> playerData;
+                    int thisPlayer;
+                    playerData = ofSplitString(received[i], ": ");
+                    if (playerData[0] == "IP"){
+                        for (int j = 0; j < otherPlayers.size(); j++) {
+                            if(playerData[1] == otherPlayers[j]->getIP()) {
+                                thisPlayer = j;
+                                break;
+                            }
+                        }
+                    }
+                    if (playerData[0] == "index") otherPlayers[thisPlayer]->setDiscIndex(ofToInt(playerData[1]));
+                }
+                
+            }
+            
             else if (title == "rotationSpeed"){
                 vector<string> nameValue;
                 nameValue = ofSplitString(received[1], ": ");
@@ -638,47 +656,92 @@ void ofApp::keyPressed(int key){
     }
     
     if(key == 'w'){
+        int jump = 1;
+        bool occupied = false;
+        for(int i = 0; i < otherPlayers.size(); i++){
+            int destination = me->getDiscIndex() + jump;
+            if( destination > disc.getDiscIndex() ) destination -= disc.getDiscIndex();
+            if(otherPlayers[i]->getDiscIndex() == destination) {
+                occupied = true;
+                jump++;
+                break;
+            }
+        }
+        while(occupied == true){
+            occupied == false;
+            for(int i = 0; i < otherPlayers.size(); i++){
+                int destination = me->getDiscIndex() + jump;
+                if( destination > disc.getDiscIndex()) destination -= disc.getDiscIndex();
+                if(otherPlayers[i]->getDiscIndex() == destination) {
+                    occupied = true;
+                    jump++;
+                }
+            }
+        }
+        if(me->getDiscIndex() + jump < disc.getDiscIndex()) me->setDiscIndex(me->getDiscIndex() + jump);
+        else me->setDiscIndex(me->getDiscIndex() + jump - disc.getDiscIndex());
         
-        if(me->getDiscIndex() + 1 < disc.getDiscIndex()){
-            
-            me->setDiscIndex(me->getDiscIndex() + 1);
-            //            disc.selected++;
-            for(int i = 0; i < disc.getDiscIndex(); i++){
-                ui[i]->setVisible(false);
-            }
-            ui[me->getDiscIndex()]->toggleVisible();
+        //change ui
+        for(int i = 0; i < disc.getDiscIndex(); i++){
+            ui[i]->setVisible(false);
         }
-        else {
-            me->setDiscIndex(0);
-            //            disc.selected = 0;
-            for(int i = 0; i < disc.getDiscIndex(); i++){
-                ui[i]->setVisible(false);
-            }
-            ui[me->getDiscIndex()]->toggleVisible();
-        }
+        ui[me->getDiscIndex()]->toggleVisible();
+        
+        //send change to server
+        string changeDisc = "otherPlayersIndex//";
+        changeDisc += "IP: "+ofToString(me->getIP()) + "//";
+        changeDisc += "index: "+ofToString(me->getDiscIndex()) + "//";
+        client.send(changeDisc);
     }
     
     if(key == 's'){
-        if(me->getDiscIndex() - 1 > -1){
-            me->setDiscIndex(me->getDiscIndex() - 1);
-            //            disc.selected--;
-            for(int i = 0; i < disc.getDiscIndex(); i++){
-                ui[i]->setVisible(false);
+        int jump = 1;
+        bool occupied = false;
+        for(int i = 0; i < otherPlayers.size(); i++){
+            int destination = me->getDiscIndex() - jump;
+            if( destination < 0 ) destination += disc.getDiscIndex();
+            if(otherPlayers[i]->getDiscIndex() == destination) {
+                occupied = true;
+                jump++;
+                break;
             }
-            ui[me->getDiscIndex()]->toggleVisible();
         }
-        else {
-            me->setDiscIndex(disc.getDiscIndex()-1);
-            for(int i = 0; i < disc.getDiscIndex(); i++){
-                ui[i]->setVisible(false);
+        while(occupied == true){
+            occupied == false;
+            for(int i = 0; i < otherPlayers.size(); i++){
+                int destination = me->getDiscIndex() - jump;
+                if( destination < 0 ) destination += disc.getDiscIndex();
+                if(otherPlayers[i]->getDiscIndex() == destination) {
+                    occupied = true;
+                    jump++;
+                }
             }
-            ui[me->getDiscIndex()]->toggleVisible();
         }
+        if(me->getDiscIndex() - jump > -1) me->setDiscIndex(me->getDiscIndex() - jump);
+        else me->setDiscIndex(me->getDiscIndex() - jump + disc.getDiscIndex());
+        
+        //change ui
+        for(int i = 0; i < disc.getDiscIndex(); i++){
+            ui[i]->setVisible(false);
+        }
+        ui[me->getDiscIndex()]->toggleVisible();
+        
+        //send change to server
+        string changeDisc = "otherPlayersIndex//";
+        changeDisc += "IP: "+ofToString(me->getIP()) + "//";
+        changeDisc += "index: "+ofToString(me->getDiscIndex()) + "//";
+        client.send(changeDisc);
     }
     
     if(key == OF_KEY_BACKSPACE) {
         ui[me->getDiscIndex()]->setVisible(false);
         me->setDiscIndex(-1);
+        
+        //send change to server
+        string changeDisc = "otherPlayersIndex//";
+        changeDisc += "IP: "+ofToString(me->getIP()) + "//";
+        changeDisc += "index: "+ofToString(me->getDiscIndex()) + "//";
+        client.send(changeDisc);
     }
     
     if(key == 'f') {

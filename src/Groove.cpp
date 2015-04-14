@@ -13,6 +13,7 @@ void Groove::setup(Disc* disc, Player* player, vector<Player *> otherPlayers){
     //groove should not operate without getting disc
     this->disc = disc;
     this->me = player;
+    this->otherPlayers = otherPlayers;
     
     
     for(int i = 0; i < disc->getDiscIndex(); i++){
@@ -116,16 +117,26 @@ void Groove::draw(){
         if( i != me->getDiscIndex() && disc->isMute(i) == 1) ofSetColor(ofColor::lightGrey);
         else if( i == me->getDiscIndex() && disc->isMute(me->getDiscIndex()) == 1) ofSetColor(ofColor::lightPink);
         else if( i == me->getDiscIndex() && disc->isMute(me->getDiscIndex()) == 0) ofSetColor(me->getColor());
+        else if( otherPlayers.size() > 0){
+            for (int j = 0; j < otherPlayers.size(); j++) {
+                if( i == otherPlayers[j]->getDiscIndex() && otherPlayers[j]->getDiscIndex() == 0) ofSetColor(otherPlayers[j]->getColor());
+            }
+        }
         else ofSetColor(33);
         
         ofSetCircleResolution(70);
         ofCircle(0,0,disc->getPosition(i), disc->getRadius(i-1));
         ofCircle(0,0,disc->getPosition(i), disc->getRadius(i));
         
-        if( i != me->getDiscIndex() && disc->isMute(i) == 1) ofSetColor(ofColor::lightGrey);
-        else if( i == me->getDiscIndex() && disc->isMute(me->getDiscIndex()) == 1) ofSetColor(ofColor::lightPink);
-        else if( i == me->getDiscIndex() && disc->isMute(me->getDiscIndex()) == 0) ofSetColor(me->getColor());
-        else ofSetColor(33);
+//        if( i != me->getDiscIndex() && disc->isMute(i) == 1) ofSetColor(ofColor::lightGrey);
+//        else if( i == me->getDiscIndex() && disc->isMute(me->getDiscIndex()) == 1) ofSetColor(ofColor::lightPink);
+//        else if( i == me->getDiscIndex() && disc->isMute(me->getDiscIndex()) == 0) ofSetColor(me->getColor());
+//        else if( otherPlayers.size() > 0){
+//            for (int j = 0; j < otherPlayers.size(); j++) {
+//                if( i == otherPlayers[j]->getDiscIndex() && otherPlayers[j]->getDiscIndex() == 0) ofSetColor(otherPlayers[j]->getColor());
+//            }
+//        }
+//        else ofSetColor(33);
         ofFill();
         
         //get texture type and draw

@@ -58,24 +58,24 @@ void Sound::setup(Disc* disc){
         
         
         float pitch = ofMap(disc->getDensity(i), 1, 30, 48, 1);
-        ControlGenerator freq = synth.addParameter("freq"+ofToString(i), pitch).min(100).max(1200);
+        ControlGenerator freq = synth.addParameter("freq"+ofToString(i), pitch);
         ControlGenerator amountFreq = synth.addParameter("amountFreq"+ofToString(i));
         ControlGenerator amountMod = synth.addParameter("amountMod"+ofToString(i),0);
         
-        Generator modulation = SineWave().freq(amountFreq) * amountMod;
-        Generator snd = SawtoothWave().freq(freq+modulation);
-        groove = snd * amplitude;
-        
-        float cutoffTarget = ofMap(disc->getRadius(i)-disc->getRadius(i-1), 15, 100, 0, 50);
+        float cutoffTarget = ofMap(disc->getThickness(i), 15, 100, 0, 50);
         ControlGenerator cutoff = synth.addParameter("frequency"+ofToString(i), cutoffTarget);
-        ControlSnapToScale scaleSnapper = ControlSnapToScale().setScale(scale);
-        scaleSnapper.input(52 + cutoff);
+        ControlSnapToScale scaleSnapper = ControlSnapToScale().setScale(scale).input(40 + cutoff);
         ControlGenerator filterFreq = ControlMidiToFreq().input(scaleSnapper);
         float qTarget = ofMap(disc->getRadius(i)-disc->getRadius(i-1), 15, 100, 10, 0);
         ControlGenerator q = synth.addParameter("q"+ofToString(i),qTarget).min(0).max(50);
+        
+        Generator modulation = SineWave().freq(amountFreq) * amountMod;
+        Generator snd = SawtoothWave().freq(filterFreq+modulation);
+        groove = snd * amplitude;
+        
         Generator filter = BPF12().input(groove).cutoff(filterFreq).Q(q);
         
-        Generator reverb = Reverb().input(filter).stereoWidth(0).wetLevel(0).dryLevel(.5);
+        Generator reverb = Reverb().input(filter).stereoWidth(1).wetLevel(1);
         Generator limiter = Limiter().input(filter);
         
         master = master + filter;
