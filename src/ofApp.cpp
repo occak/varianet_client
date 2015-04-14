@@ -72,11 +72,14 @@ void ofApp::setup(){
     ofAddListener(updateButtons->newGUIEvent, this, &ofApp::guiEvent);
     
     chat = new ofxUICanvas();
-    chat->setDrawBack(true);
-    chat->setPosition(ofGetWidth()/2, ofGetHeight()/2);
+    chat->setDrawBack(false);
+    chat->setPosition(400, 0);
+    chat->setDimensions(500, 500);
+    chat->setColorFill(ofxUIColor(0,200,0));
     conversation = "";
     chat->addTextInput("chatInput", "");
-    chat->addTextArea("chat", "chat area");
+    chat->addTextArea("chat", "chat area", OFX_UI_FONT_LARGE);
+    chat->setVisible(false);
     
     ofAddListener(chat->newGUIEvent, this, &ofApp::guiEvent);
     
@@ -106,15 +109,18 @@ void ofApp::exit(){
 //--------------------------------------------------------------
 void ofApp::guiEvent(ofxUIEventArgs &e)
 {
-    cout<< e.getKind() <<endl;
+    
     if( e.getKind() == OFX_UI_WIDGET_TEXTINPUT){
         ofxUITextInput *text = (ofxUITextInput *) e.widget;
+        string input;
         if(text->getTextString() != ""){
-        string input = me->getIP() + ": " + text->getTextString()+"\n";
+            input = me->getIP() + "::" + text->getTextString()+"\n";
+        }
+        else input = "\n";
+        client.send("chat//" + input);
         conversation = input + conversation;
         ofxUITextArea *history = (ofxUITextArea *) chat->getWidget("chat");
         history->setTextString(conversation);
-        }
         
     }
     for(int i = 0; i < disc.getDiscIndex(); i++){
@@ -317,7 +323,7 @@ void ofApp::guiEvent(ofxUIEventArgs &e)
 void ofApp::update(){
     
     //    disc.update();
-    //    groove.update();
+        groove.update();
     
     for(int i = 0; i< disc.getDiscIndex(); i++){
         float amountFreq = ofMap(abs(disc.getNetRotationSpeed(i)), 0, 10, 0, 5000);
@@ -439,6 +445,7 @@ void ofApp::update(){
                 for(int i = 1; i < received.size(); i++ ){
                     vector<string> playerData;
                     playerData = ofSplitString(received[i], ": ");
+                    if (playerData[0] == "IP") _player->setIP(playerData[1]);
                     if (playerData[0] == "color") _player->setColor(ofFromString<ofColor>(playerData[1]));
                     if (playerData[0] == "life") _player->setLife(ofToFloat(playerData[1]));
                     if (playerData[0] == "index") _player->setDiscIndex(ofToInt(playerData[1]));
@@ -595,6 +602,14 @@ void ofApp::update(){
                 disc.resetPerlin[ofToInt(nameValue[0])] = ofToInt(nameValue[1]);
             }
             
+            else if (title == "chat"){
+                
+                conversation = received[1] + conversation;
+                ofxUITextArea *history = (ofxUITextArea *) chat->getWidget("chat");
+                history->setTextString(conversation);
+                
+            }
+            
             //            else if (title == "zPosition"){
             //                vector<string> nameValue;
             //                nameValue = ofSplitString(received[1], ": ");
@@ -603,21 +618,6 @@ void ofApp::update(){
         }
     }
     
-    char zPosition[100];
-    receiver.Receive(zPosition, 100);
-    string str = zPosition;
-    if(str!=""){
-        received = ofSplitString(str, "//");
-        title = received[0];
-        if (title == "zPosition"){
-            vector<string> nameValue;
-            nameValue = ofSplitString(received[1], ": ");
-            disc.setPosition(atof(nameValue[0].c_str()), atof(nameValue[1].c_str()));
-        }
-        
-    }
-    
-    groove.update();
     
 }
 //--------------------------------------------------------------
@@ -662,6 +662,7 @@ void ofApp::keyPressed(int key){
     if(key == ' ') groove.turn = !groove.turn;
     if(key == 'p') disc.toggleMoving(me->getDiscIndex());
     if(key == 'o') disc.resetPerlin[me->getDiscIndex()] = 1;
+    if(key == 'c') chat->toggleVisible();
     
     if(key == 'a' && me->getDiscIndex() != -1) {
         
