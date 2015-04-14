@@ -27,8 +27,7 @@ public:
     void update();
     void draw();
     
-    ofRectangle lifeBarFrame;
-    ofRectangle lifeBar;
+    vector<ofRectangle> lifeBar;
     
     bool turn = true;
     Disc* disc;

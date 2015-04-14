@@ -437,7 +437,7 @@ void ofApp::update(){
                 groove.setup(&disc, me, otherPlayers);
             }
             
-            else if (title == "otherPlayersIndex" && otherPlayers.size() > 0){  //don't go in here unless there are other players registered
+            else if (title == "otherPlayersIndex"){
                 for(int i = 1; i < received.size(); i++ ){
                     vector<string> playerData;
                     int thisPlayer;
@@ -453,7 +453,24 @@ void ofApp::update(){
                     if (playerData[0] == "index") otherPlayers[thisPlayer]->setDiscIndex(ofToInt(playerData[1]));
                     cout<< received[i] <<endl;
                 }
-                
+            }
+            
+            else if (title == "life"){
+                for(int i = 1; i < received.size(); i++ ){
+                    vector<string> playerData;
+                    int thisPlayer;
+                    playerData = ofSplitString(received[i], ": ");
+                    if (playerData[0] == "IP"){
+                        for (int j = 0; j < otherPlayers.size(); j++) {
+                            if(playerData[1] == otherPlayers[j]->getIP()) {
+                                thisPlayer = j;
+                                break;
+                            }
+                        }
+                    }
+                    if (playerData[0] == "life") otherPlayers[thisPlayer]->setLife(ofToFloat(playerData[1]));
+                    cout<< received[i] <<endl;
+                }
             }
             
             else if (title == "rotationSpeed"){
@@ -594,7 +611,13 @@ void ofApp::draw(){
     
     ofSetColor(me->getColor());
     ofFill();
-    ofRect(groove.lifeBar);
+    ofRect(groove.lifeBar[0]);
+    
+    for(int i = 0; i < otherPlayers.size(); i++){
+        ofSetColor(otherPlayers[i]->getColor());
+        ofFill();
+        ofRect(groove.lifeBar[i+1]);
+    }
     
     ofPopMatrix();
     
@@ -820,8 +843,9 @@ void ofApp::mouseReleased(int x, int y, int button){
         me->setLife(me->getLife()-costRadius);
         
         //update server
-        string lifeUpdate;
-        lifeUpdate = "life//"+ofToString(me->getLife());
+        string lifeUpdate = "life//";
+        lifeUpdate += "IP: "+ofToString(me->getIP()) + "//";
+        lifeUpdate += "life: "+ofToString(me->getLife()) + "//";
         client.send(lifeUpdate);
         
         //update buttons
@@ -840,8 +864,9 @@ void ofApp::mouseReleased(int x, int y, int button){
         me->setLife(me->getLife()-costDensity);
         
         //update server
-        string lifeUpdate;
-        lifeUpdate = "life//"+ofToString(me->getLife());
+        string lifeUpdate = "life//";
+        lifeUpdate += "IP: "+ofToString(me->getIP()) + "//";
+        lifeUpdate += "life: "+ofToString(me->getLife()) + "//";
         client.send(lifeUpdate);
     }
     else if(textureChanged){
@@ -849,8 +874,9 @@ void ofApp::mouseReleased(int x, int y, int button){
         me->setLife(me->getLife()-costTexture);
         
         //update server
-        string lifeUpdate;
-        lifeUpdate = "life//"+ofToString(me->getLife());
+        string lifeUpdate = "life//";
+        lifeUpdate += "IP: "+ofToString(me->getIP()) + "//";
+        lifeUpdate += "life: "+ofToString(me->getLife()) + "//";
         client.send(lifeUpdate);
     }
     else if(rotationChanged){
@@ -858,8 +884,9 @@ void ofApp::mouseReleased(int x, int y, int button){
         me->setLife(me->getLife()-costRotation);
         
         //update server
-        string lifeUpdate;
-        lifeUpdate = "life//"+ofToString(me->getLife());
+        string lifeUpdate = "life//";
+        lifeUpdate += "IP: "+ofToString(me->getIP()) + "//";
+        lifeUpdate += "life: "+ofToString(me->getLife()) + "//";
         client.send(lifeUpdate);
     }
 }

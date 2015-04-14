@@ -52,17 +52,31 @@ void Groove::setup(Disc* disc, Player* player, vector<Player *> otherPlayers){
     }
     
     // life bar & life
-    
+    for(int i = 0; i < otherPlayers.size()+1; i++){
+        ofRectangle thisBar;
+        lifeBar.push_back(thisBar);
+    }
 }
 
 void Groove::update(){
     
+    ofRectangle myBar;
+    float myHeight = ofMap(me->getLife(), 0, 100, 0, ofGetHeight());
+    myBar.x = ofGetWidth()/2-10;
+    myBar.y = -ofGetHeight()/2+(ofGetHeight()-myHeight);
+    myBar.width = 10;
+    myBar.height = myHeight;
+    lifeBar[0] = myBar;
     
-    float barHeight = ofMap(me->getLife(), 0, 100, 0, ofGetHeight());
-    lifeBar.x = ofGetWidth()/2-10;
-    lifeBar.y = -ofGetHeight()/2+(ofGetHeight()-barHeight);
-    lifeBar.width = 10;
-    lifeBar.height = barHeight;
+    for(int i = 0; i < otherPlayers.size(); i++){
+        ofRectangle thisBar;
+        float thisHeight = ofMap(otherPlayers[i]->getLife(), 0, 100, 0, ofGetHeight());
+        thisBar.x = (ofGetWidth()/2)-(10*(i+2));
+        thisBar.y = -ofGetHeight()/2+(ofGetHeight()-thisHeight);
+        thisBar.width = 10;
+        thisBar.height = thisHeight;
+        lifeBar[i+1] = thisBar;
+    }
     
     
     // update mesh position
@@ -130,17 +144,17 @@ void Groove::draw(){
         ofCircle(0,0,disc->getPosition(i), disc->getRadius(i-1));
         ofCircle(0,0,disc->getPosition(i), disc->getRadius(i));
         
-//        if( i != me->getDiscIndex() && disc->isMute(i) == 1) ofSetColor(ofColor::lightGrey);
-//        else if( i == me->getDiscIndex() && disc->isMute(me->getDiscIndex()) == 1) ofSetColor(ofColor::lightPink);
-//        else if( i == me->getDiscIndex() && disc->isMute(me->getDiscIndex()) == 0) ofSetColor(me->getColor());
-//        else if( otherPlayers.size() > 0){
-//            for (int j = 0; j < otherPlayers.size(); j++) {
-//                if( i == otherPlayers[j]->getDiscIndex() && disc->isMute(otherPlayers[j]->getDiscIndex()) == 0) ofSetColor(otherPlayers[j]->getColor());
-//                else if( i == otherPlayers[j]->getDiscIndex() && disc->isMute(otherPlayers[j]->getDiscIndex()) == 1) ofSetColor(ofColor::lightPink);
-//                else continue;
-//            }
-//        }
-//        else ofSetColor(33);
+        //        if( i != me->getDiscIndex() && disc->isMute(i) == 1) ofSetColor(ofColor::lightGrey);
+        //        else if( i == me->getDiscIndex() && disc->isMute(me->getDiscIndex()) == 1) ofSetColor(ofColor::lightPink);
+        //        else if( i == me->getDiscIndex() && disc->isMute(me->getDiscIndex()) == 0) ofSetColor(me->getColor());
+        //        else if( otherPlayers.size() > 0){
+        //            for (int j = 0; j < otherPlayers.size(); j++) {
+        //                if( i == otherPlayers[j]->getDiscIndex() && disc->isMute(otherPlayers[j]->getDiscIndex()) == 0) ofSetColor(otherPlayers[j]->getColor());
+        //                else if( i == otherPlayers[j]->getDiscIndex() && disc->isMute(otherPlayers[j]->getDiscIndex()) == 1) ofSetColor(ofColor::lightPink);
+        //                else continue;
+        //            }
+        //        }
+        //        else ofSetColor(33);
         ofFill();
         
         //get texture type and draw
