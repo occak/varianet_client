@@ -53,7 +53,6 @@ class ofApp : public ofBaseApp{
     vector<string> received;
     string title;
     
-    ofTextField chat;
     
 private:
     
@@ -70,6 +69,9 @@ private:
     vector<ofxUICanvas *> ui;
 //    vector<ofxUILabelToggle *> updateButtons;
     ofxUICanvas *updateButtons;
+    
+    ofxUICanvas *chat;
+    string conversation;
 
 
 };

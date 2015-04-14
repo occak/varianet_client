@@ -43,15 +43,20 @@ void ofApp::setup(){
         
         if(disc.getTexture(i)==0) _ui->addToggle("blank", true);
         else _ui->addToggle("blank", false);
+         _ui->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
         if(disc.getTexture(i)==1) _ui->addToggle("line", true);
         else _ui->addToggle("line", false);
+         _ui->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
         if(disc.getTexture(i)==2) _ui->addToggle("tri", true);
         else _ui->addToggle("tri", false);
+         _ui->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
         if(disc.getTexture(i)==3) _ui->addToggle("saw", true);
         else _ui->addToggle("saw", false);
+         _ui->setWidgetPosition(OFX_UI_WIDGET_POSITION_RIGHT);
         if(disc.getTexture(i)==4) _ui->addToggle("rect", true);
         else _ui->addToggle("rect", false);
         
+       
         _ui->autoSizeToFitWidgets();
         _ui->setVisible(false);
         ofAddListener(_ui->newGUIEvent, this, &ofApp::guiEvent);
@@ -65,6 +70,15 @@ void ofApp::setup(){
     updateButtons->setDrawBack(false);
     updateButtons->setFontSize(OFX_UI_FONT_SMALL, 5.8);
     ofAddListener(updateButtons->newGUIEvent, this, &ofApp::guiEvent);
+    
+    chat = new ofxUICanvas();
+    chat->setDrawBack(true);
+    chat->setPosition(ofGetWidth()/2, ofGetHeight()/2);
+    conversation = "";
+    chat->addTextInput("chatInput", "");
+    chat->addTextArea("chat", "chat area");
+    
+    ofAddListener(chat->newGUIEvent, this, &ofApp::guiEvent);
     
     //set up audio stream & synth network
     phase = 0;
@@ -92,6 +106,17 @@ void ofApp::exit(){
 //--------------------------------------------------------------
 void ofApp::guiEvent(ofxUIEventArgs &e)
 {
+    cout<< e.getKind() <<endl;
+    if( e.getKind() == OFX_UI_WIDGET_TEXTINPUT){
+        ofxUITextInput *text = (ofxUITextInput *) e.widget;
+        if(text->getTextString() != ""){
+        string input = me->getIP() + ": " + text->getTextString()+"\n";
+        conversation = input + conversation;
+        ofxUITextArea *history = (ofxUITextArea *) chat->getWidget("chat");
+        history->setTextString(conversation);
+        }
+        
+    }
     for(int i = 0; i < disc.getDiscIndex(); i++){
         if(e.getName() == "rotation" + ofToString(i+1)){
             ofxUISlider *slider = e.getSlider();
@@ -628,6 +653,11 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
+    
+    if(chat->hasKeyboardFocus())
+    {
+        return;
+    }
     
     if(key == ' ') groove.turn = !groove.turn;
     if(key == 'p') disc.toggleMoving(me->getDiscIndex());
