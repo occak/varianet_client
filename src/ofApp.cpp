@@ -1,12 +1,12 @@
 #include "ofApp.h"
 
 /*
- texture patterns can be randomized
+
+ player checks 
  
- what property has what audible consequence?
- UI?
+ perlin cpp
  
- send all disc values to client when initialized
+ event button create
  
  */
 
@@ -451,6 +451,7 @@ void ofApp::update(){
                         }
                     }
                     if (playerData[0] == "index") otherPlayers[thisPlayer]->setDiscIndex(ofToInt(playerData[1]));
+                    cout<< received[i] <<endl;
                 }
                 
             }
@@ -675,7 +676,9 @@ void ofApp::keyPressed(int key){
                 if(otherPlayers[i]->getDiscIndex() == destination) {
                     occupied = true;
                     jump++;
+                    break;
                 }
+                else continue;
             }
         }
         if(me->getDiscIndex() + jump < disc.getDiscIndex()) me->setDiscIndex(me->getDiscIndex() + jump);
@@ -692,6 +695,8 @@ void ofApp::keyPressed(int key){
         changeDisc += "IP: "+ofToString(me->getIP()) + "//";
         changeDisc += "index: "+ofToString(me->getDiscIndex()) + "//";
         client.send(changeDisc);
+        
+        cout<< me->getDiscIndex() <<endl;
     }
     
     if(key == 's'){
@@ -699,7 +704,8 @@ void ofApp::keyPressed(int key){
         bool occupied = false;
         for(int i = 0; i < otherPlayers.size(); i++){
             int destination = me->getDiscIndex() - jump;
-            if( destination < 0 ) destination += disc.getDiscIndex();
+            if( destination < -1 ) destination += disc.getDiscIndex() + jump;
+            else if( destination < 0 ) destination += disc.getDiscIndex();
             if(otherPlayers[i]->getDiscIndex() == destination) {
                 occupied = true;
                 jump++;
@@ -714,7 +720,9 @@ void ofApp::keyPressed(int key){
                 if(otherPlayers[i]->getDiscIndex() == destination) {
                     occupied = true;
                     jump++;
+                    break;
                 }
+                else continue;
             }
         }
         if(me->getDiscIndex() - jump > -1) me->setDiscIndex(me->getDiscIndex() - jump);
@@ -731,6 +739,8 @@ void ofApp::keyPressed(int key){
         changeDisc += "IP: "+ofToString(me->getIP()) + "//";
         changeDisc += "index: "+ofToString(me->getDiscIndex()) + "//";
         client.send(changeDisc);
+        
+        cout<< me->getDiscIndex() <<endl;
     }
     
     if(key == OF_KEY_BACKSPACE) {
